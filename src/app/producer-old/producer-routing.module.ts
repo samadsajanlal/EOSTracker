@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { ProducersComponent } from './Producers/Producers.component';
-import { ProducerComponent } from './Producer/Producer.component';
+import { ProducersComponent } from './producers/producers.component';
+import { ProducerComponent } from './producer/producer.component';
 
 const routes: Routes = [
   {

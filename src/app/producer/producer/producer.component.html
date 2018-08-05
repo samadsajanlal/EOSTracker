@@ -2,7 +2,7 @@
 	<div id="page-wrapper">
 		<div class="row">
 			<div class="col-lg-12">
-				<h1 class="page-header">{{ 'Producer' | translate }} <span *ngIf="account">{{account.name}}</span></h1>
+				<h1 class="page-header">{{ 'producer' | translate }}</h1>
 			</div>
 			<!-- /.col-lg-12 -->
 		</div>
@@ -11,73 +11,51 @@
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						{{ 'Producer' | translate }}
+						{{ 'producer' | translate }}
 					</div>
 					<!-- /.panel-heading -->
 					<div class="panel-body">
-						<app-loading *ngIf="!account"></app-loading>
-						<div *ngIf="account" class="table-responsive">
+						<app-loading *ngIf="!producer"></app-loading>
+						<div *ngIf="producer" class="table-responsive">
 							<table class="table table-striped">
-								<tr *ngIf="bpJson && bpJson.org.candidate_name">
-									<td>{{ 'Name' | translate }}:</td>
-									<td>{{bpJson.org.candidate_name}}</td>
+								<tr>
+									<td>{{ 'Id' | translate }}:</td>
+									<td>{{producer.id}}</td>
 								</tr>
 								<tr>
-									<td>{{ 'Account' | translate }}:</td>
-									<td>{{account.name}} <i *ngIf="validated" class="fa fa-check" style="color: green" aria-hidden="true"></i></td>
+									<td>{{ 'Block' | translate }}:</td>
+									<td><a routerLink="/blocks/{{producer.blockId}}">{{producer.blockId}}</a>
+									</td>
 								</tr>
-								<tr *ngIf="producer">
-									<td>{{ 'Public Key' | translate }}:</td>
-									<td>{{producer.producer_key}} <i *ngIf="validated" class="fa fa-check" style="color: green" aria-hidden="true"></i></td>
+								<tr>
+									<td>{{ 'CreatedAt' | translate }}:</td>
+									<td>{{producer.createdAt | amFromUnix | amSubtract: 2 : 'hours' | date:'medium'}}</td>
 								</tr>
-								<tr *ngIf="producer">
-									<td>{{ 'Votes' | translate }}:</td>
-									<td>{{producer.votes}}%</td>
+								<tr>
+									<td>{{ 'Pending' | translate }}:</td>
+									<td>{{producer.pending}}</td>
 								</tr>
-								<tr *ngIf="producer">
-									<td>{{ 'Url' | translate }}:</td>
-									<td>{{producer.url}}</td>
+								<tr>
+									<td>{{ 'Actions' | translate }}:</td>
+									<td>{{producer.numActions}}</td>
 								</tr>
-								<tr *ngIf="producer">
-									<td>{{ 'Position' | translate }}:</td>
-									<td>#{{producer.position}}</td>
+
+								<tr *ngIf="transactionRaw">
+									<td>{{ 'CPU Usage' | translate }}:</td>
+									<td>{{transactionRaw.cpu_usage_us | number }} µs</td>
 								</tr>
-								<tr *ngIf="producer">
-									<td>{{ 'Daily Reward' | translate }}:</td>
-									<td>{{producer.reward}} EOS</td>
+								<tr *ngIf="transactionRaw">
+									<td>{{ 'Net Usage' | translate }}:</td>
+									<td>{{transactionRaw.net_usage_words | toKB | number:'1.0-3'}} KB</td>
 								</tr>
 							</table>
 						</div>
-						<!-- /.table-responsive -->
 					</div>
 					<!-- /.panel-body -->
 				</div>
 				<!-- /.panel -->
 			</div>
 		</div>
-
-
-		<div class="row">
-			<div class="col-lg-12">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						{{ 'Nodes' | translate }}
-					</div>
-					<!-- /.panel-heading -->
-					<div class="panel-body">
-						<app-loading *ngIf="!account"></app-loading>
-						<div *ngIf="account" class="table-responsive">
-							<div #gmap style="width:100%;height:300px"></div>
-						</div>
-						<!-- /.table-responsive -->
-					</div>
-					<!-- /.panel-body -->
-				</div>
-				<!-- /.panel -->
-			</div>
-		</div>
-
-
 
 		<div class="panel-group" id="accordion">
 			<div class="panel panel-default">
@@ -88,41 +66,48 @@
 				</div>
 				<div id="collapseOne" class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
 					<div class="panel-body">
-						<prettyjson [obj]="accountRaw"></prettyjson>
+						<prettyjson [obj]="transactionRaw"></prettyjson>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="row">
+
+		<div class="row" *ngIf="producer && producer.numActions > 0">
 			<div class="col-lg-12">
 				<div class="panel panel-default">
 					<div class="panel-heading">
-						{{ 'Votes' | translate }}
+						{{ 'Actions' | translate }}
 
 						<div class="pull-right">
-							<button *ngIf="page != 0" type="button" (click)="prevPage()" class="btn btn-outline btn-info btn-xs"><i class="fa fa-angle-left"> {{ 'Previous' | translate }}</i></button>
-							<button *ngIf="votes && votes.length == 50" type="button" (click)="nextPage()" class="btn btn-outline btn-info btn-xs">{{ 'Next' | translate }} <i class="fa fa-angle-right"></i></button>
+							<button *ngIf="page != 1" type="button" (click)="prevPage()" class="btn btn-outline btn-info btn-xs"><i class="fa fa-angle-left"> {{ 'Previous' | translate }}</i></button>
+							<button *ngIf="actions && actions.length == 30" type="button" (click)="nextPage()" class="btn btn-outline btn-info btn-xs">{{ 'Next' | translate }} <i class="fa fa-angle-right"></i></button>
 						</div>
 
 					</div>
 					<!-- /.panel-heading -->
 					<div class="panel-body">
-						<app-loading *ngIf="!votes"></app-loading>
-						<div *ngIf="votes" class="table-responsive">
+						<app-loading *ngIf="!actions"></app-loading>
+						<div *ngIf="actions" class="table-responsive">
 							<table class="table table-striped">
 								<thead>
 								<tr>
-									<th>{{ 'Account' | translate }}</th>
-									<th>{{ 'Staked' | translate }}</th>
-									<th>{{ 'Number of BPs' | translate }}</th>
+									<th>#</th>
+									<th>{{ 'Authorization' | translate }}</th>
+									<th>{{ 'Handler' | translate }}</th>
+									<th>{{ 'Name' | translate }}</th>
 								</tr>
 								</thead>
 								<tbody>
-								<tr *ngFor="let vote of votes">
-									<td><a routerLink="/accounts/{{vote.account}}">{{vote.account}}</a></td>
-									<td>{{vote.staked | number}} EOS</td>
-									<td>{{vote.votes.length}}</td>
+								<tr *ngFor="let action of actions">
+									<td><a routerLink="/actions/{{action.id}}">{{action.id}}</a></td>
+									<td>
+					                    <span *ngFor="let authorization of action.authorizations">
+					                          <a routerLink="/accounts/{{authorization.actor}}">{{authorization.actor}}</a>
+					                    </span>
+									</td>
+									<td><a routerLink="/accounts/{{action.account}}">{{action.account}}</a></td>
+									<td>{{action.name}}</td>
 								</tr>
 								</tbody>
 							</table>
@@ -134,6 +119,21 @@
 				<!-- /.panel -->
 			</div>
 		</div>
+<!--
+		<div class="panel-group" id="accordion">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" class="collapsed">{{ 'BlockchainRawData' | translate }}</a>
+					</h4>
+				</div>
+				<div id="collapseOne" class="panel-collapse collapse" aria-expanded="false" style="height: 0px;">
+					<div class="panel-body">
+						<prettyjson [obj]="transactionRaw"></prettyjson>
+					</div>
+				</div>
+			</div>
+		</div> -->
 
 		<!-- /.row -->
 	</div>
